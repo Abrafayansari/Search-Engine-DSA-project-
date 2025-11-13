@@ -4,15 +4,14 @@
 #include <string>
 #include <vector>
 #include <cctype>
-using namespace std;
+#include "utils.cpp"
 
-// C++11 unordered_set for stopwords
+using namespace std;
 unordered_set<string> stopwords = { "a","an","and","are","as","at","be","but","by",
                                     "for","if","in","into","is","it","no","not","of",
                                     "on","or","such","that","the","their","then","there",
                                     "these","they","this","to","was","will","with" };
 
-// Remove punctuation and convert to lowercase
 string remove_unwanted_characters(const string& s) {
     string s1 = "";
     for (int i = 0; i < s.length(); i++) {
@@ -26,14 +25,14 @@ string remove_unwanted_characters(const string& s) {
 }
 
 // Extract words from files and print non-stopwords with line numbers
-void extract_from_files(vector<string>& files) {
+void extract_from_files(vector<string>& files,Avl* &avl,Node * &root) {
     for (int i = 0; i < files.size(); i++) {
         ifstream file(files[i].c_str());
         if (!file) {
             cout << "Error opening file: " << files[i] << endl;
             continue;
         }
-
+		bool rooted=false;
         string line;
         int lineNumber = 0;
         while (getline(file, line)) {
@@ -44,7 +43,11 @@ void extract_from_files(vector<string>& files) {
                     if (!word.empty()) {
                         string cleaned = remove_unwanted_characters(word);
                         if (!cleaned.empty() && stopwords.find(cleaned) == stopwords.end()) {
-                            cout << cleaned << " (" << files[i] << ", line " << lineNumber << ")" << endl;
+                        
+							root=avl->insert(root,cleaned,files[i]);
+							 cout << cleaned  << " (" << files[i] << ", line " << lineNumber << ")" << endl;
+
+							
                         }
                         word = "";
                     }
@@ -57,11 +60,28 @@ void extract_from_files(vector<string>& files) {
 }
 
 int main() {
-    vector<string> files;
-    files.push_back("t1.txt");
-    files.push_back("t2.txt");
+    Avl *avl = new Avl();          // initialize AVL
+    vector<string> files = {"t1.txt", "t2.txt"};
 
-    extract_from_files(files);
+    // Read first word of first file to create root
+    string firstWord;
+    ifstream firstFile(files[0]);
+    if (firstFile >> firstWord) {
+        firstWord = remove_unwanted_characters(firstWord);
+    } else {
+        cout << "First file is empty!" << endl;
+        return 1;
+    }
+    Node* root = new Node(firstWord);
+    root->add_FNF(files[0], 1); 
 
+    
+    extract_from_files(files, avl, root);
+
+    cout << "\n\nInorder traversal of AVL (unique words):\n";
+    avl->inorder(root);
+    cout << endl;
+
+    delete avl;  
     return 0;
 }
