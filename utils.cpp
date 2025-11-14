@@ -2,6 +2,16 @@
 using namespace std;
 #define FILE_COUNT 5
 
+class S_Node {
+public:
+    string data;
+    S_Node* next;
+    S_Node(string val) {
+        data = val;
+        next = nullptr;
+    }
+};
+
 class FNF{
 public:
     string file_Name;
@@ -57,6 +67,121 @@ public:
 	add_FNF(file_name,1);
 	}
 };
+
+class Stack {
+private:
+    S_Node* top;
+public:
+    Stack() {
+        top = nullptr;
+    }
+
+    void push(string url) {
+        S_Node* newNode = new S_Node(url);
+        newNode->next = top;
+        top = newNode;
+    }
+
+    void pop() {
+        if (top == nullptr) {
+            cout << "History is empty" << endl;
+            return;
+        }
+        S_Node* temp = top;
+        top = top->next;
+        delete temp;
+    }
+
+    string peek() {
+        if (top == nullptr) {
+            return "";
+        }
+        return top->data;
+    }
+
+    void display() {
+        if (top == nullptr) {
+            cout << "History is empty" << endl;
+            return;
+        }
+        cout << "Browsing History:" << endl;
+        S_Node* temp = top;
+        int count = 1;
+        while (temp != nullptr) {
+            cout << count << ". " << temp->data << endl;
+            temp = temp->next;
+            count++;
+        }
+    }
+
+    bool isEmpty() {
+        return top == nullptr;
+    }
+};
+
+
+class Queue {
+private:
+    S_Node* front;
+    S_Node* rear;
+    int count;
+    const int MAX_SIZE = 5;
+
+public:
+    Queue() {
+        front = nullptr;
+        rear = nullptr;
+        count = 0;
+    }
+
+    void enqueue(string url) {
+        if (count >= MAX_SIZE) {
+            dequeue();
+        }
+        
+        S_Node* newNode = new Node(url);
+        
+        if (rear == nullptr) {
+            front = rear = newNode;
+        } else {
+            rear->next = newNode;
+            rear = newNode;
+        }
+        count++;
+    }
+
+    void dequeue() {
+        if (front == nullptr) {
+            return;
+        }
+        S_Node* temp = front;
+        front = front->next;
+        if (front == nullptr) {
+            rear = nullptr;
+        }
+        delete temp;
+        count--;
+    }
+
+    void display() {
+        if (front == nullptr) {
+            cout << "No recent searches" << endl;
+            return;
+        }
+        cout << "Recent 5 Searches:" << endl;
+        S_Node* temp = front;
+        int position = 1;
+        while (temp != nullptr) {
+            cout << position << ". " << temp->data << endl;
+            temp = temp->next;
+            position++;
+        }
+    }
+
+    bool isEmpty() {
+        return front == nullptr;
+    }
+};v
 
 class Avl{
 public:
@@ -240,34 +365,18 @@ class heap{
 		if(size==0)return;
 		arr[1]=arr[size];
 		size--;
-		int i=1;
-		while(true){
-			int left=2*i;
-			int right=2*i+1;
-			
-			if(i<size&&arr[left]>arr[i]){
-				swap(arr[left],arr[i]);
-				i=left;
-			}else if(i<size&&arr[right]>arr[i]){
-				swap(arr[right],arr[i]);
-				i=right;
-			}else{
-				return;
-			}
-		}
-	
-		
+		heapify(arr,size,1);
 	}
 	
 	void heapify(int arr1[],int size1,int i){
 		int tobesort=i;
-		int left=2*i+1;
-		int right=2*i+2;
+		int left=2*i;
+		int right=2*i+1;
 				
-		if(tobesort<size1&&arr1[left]>arr1[tobesort]){
+		if(left<=size1&&arr1[left]>arr1[tobesort]){
 			tobesort=left;
 		}
-		 if(tobesort<size1&&arr1[right]>arr1[tobesort]){
+		 if(right<=size1&&arr1[right]>arr1[tobesort]){
 		tobesort=right;
 		}
 		
@@ -277,6 +386,13 @@ class heap{
 		}
 	
 	
+	}
+	
+	void heap_sort(){
+		for(int i=size;i>1;i--){
+			swap(arr[i],arr[1]);
+		heapify(arr,i-1,1);
+		}
 	}
 };
 
