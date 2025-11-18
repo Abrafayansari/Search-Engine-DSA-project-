@@ -43,10 +43,14 @@ void extract_from_files(vector<string>& files,Avl* &avl,Node * &root) {
                     if (!word.empty()) {
                         string cleaned = remove_unwanted_characters(word);
                         if (!cleaned.empty() && stopwords.find(cleaned) == stopwords.end()) {
-                        
-							root=avl->insert(root,cleaned,files[i],lineNumber);
+                        if(rooted){
+                        	root=avl->insert(root,cleaned,files[i],lineNumber);
 							 cout << cleaned  << " (" << files[i] << ", line " << lineNumber << ")" << endl;
 
+						}else{
+							rooted=true;
+						}
+							
 							
                         }
                         word = "";
@@ -62,7 +66,8 @@ void extract_from_files(vector<string>& files,Avl* &avl,Node * &root) {
 int main() {
     Avl *avl = new Avl();          // initialize AVL
     vector<string> files = {"t1.txt", "t2.txt"};
-
+Stack browsinghistory;
+    Queue recentsearches;
     // Read first word of first file to create root
     string firstWord;
     ifstream firstFile(files[0]);
@@ -81,7 +86,72 @@ int main() {
     cout << "\n\nInorder traversal of AVL (unique words):\n";
     avl->inorder(root);
     cout << endl;
-avl->search(root,"ahmad");
-    delete avl;  
+  avl->search(root,"rafay",browsinghistory,recentsearches);
+    
+     
+    
+    int choice;
+    string query;
+
+    cout << "SEARCH ENGINE" << endl;
+
+    do {
+    	cout<<endl;
+    	cout << "===========================\n";
+        cout << "|1. Search Word           |" << endl;
+        cout << "|2. View All Documents    |" << endl;
+        cout << "|3. Show Browsing History |" << endl;
+        cout << "|4. Show Recent Searches  |" << endl;
+        cout << "|5. Go Back               |" << endl;
+        cout << "|6. Clear Recent Searches |" << endl;
+        cout << "|7. Exit                  |" << endl;
+        cout << "===========================\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+		cout<<endl;
+        switch (choice) {
+            case 1:
+                cout << "Enter search word: ";
+                cin>>query;
+                if (!query.empty()) {
+                cout<<"Results .........\n";
+  avl->search(root,remove_unwanted_characters(query),browsinghistory,recentsearches);
+  
+                }
+                break;
+
+            case 2:
+//                engine.displayAllDocuments();
+                break;
+
+            case 3:
+                browsinghistory.display();
+                break;
+
+            case 4:
+                recentsearches.display();
+                break;
+
+            case 5:
+                browsinghistory.pop();
+                break;
+
+            case 6:
+                while (!recentsearches.isEmpty()) {
+                    recentsearches.dequeue();
+                }
+                cout << "Recent searches cleared" << endl;
+                break;
+
+            case 7:
+                cout << "Exiting" << endl;
+                break;
+
+            default:
+                cout << "Invalid choice" << endl;
+        }
+
+    } while (choice != 7);
+delete avl;
     return 0;
 }

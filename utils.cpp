@@ -104,6 +104,71 @@ public:
 
 };
 
+
+class heap{
+	public:
+	FNF fnf_arr[1000];
+	int size;
+	
+	heap(){
+		size=0;
+	}
+	
+	void insert(FNF d){
+		if(size==1000)return;
+		size++;
+		fnf_arr[size]=d;
+		int i=size;
+		while(i>1){
+			int parent=i/2;
+			
+			if(fnf_arr[parent].frequency<fnf_arr[i].frequency){
+			   swap(fnf_arr[parent],fnf_arr[i]);
+			   i=parent;
+			}else{
+				return;
+			}
+			
+		}
+	}
+	
+//	void delete_from_heap(){
+//		if(size==0)return;
+//		fnf_arr[1]=fnf_arr[size];
+//		size--;
+//		heapify(fnf_arr,size,1);
+//	}
+	
+	void heapify(FNF fnf_arr1[],int size1,int i){
+		int tobesort=i;
+		int left=2*i;
+		int right=2*i+1;
+				
+		if(left<=size1&&fnf_arr1[left].frequency>fnf_arr1[tobesort].frequency){
+			tobesort=left;
+		}
+		 if(right<=size1&&fnf_arr1[right].frequency>fnf_arr1[tobesort].frequency){
+		tobesort=right;
+		}
+		
+		if(i!=tobesort){
+			swap(fnf_arr1[tobesort],fnf_arr1[i]);
+			heapify(fnf_arr1,size1,tobesort);
+		}
+	
+	
+	}
+	
+	void heap_sort(){
+		for(int i=size;i>1;i--){
+			swap(fnf_arr[i],fnf_arr[1]);
+		heapify(fnf_arr,i-1,1);
+		}
+	}
+};
+
+
+
 class Stack {
 private:
     S_Node* top;
@@ -401,9 +466,9 @@ Node* search_Node(Node* root, string word) {
 }
 
 
-void search(Node* root, string word) {
+void search(Node* root, string word,Stack &s,Queue &q) {
     Node* node = search_Node(root, word);
-    if(node == NULL){
+    if(node == NULL||word==""){
         cout << "No results found for word: " << word << endl;
         return;
     }
@@ -412,7 +477,8 @@ void search(Node* root, string word) {
     ResultEntry results[FILE_COUNT];
     int resCount = 0;
     int totalHits = 0;
-
+s.push(word);
+q.enqueue(word);
     for(int i=0; i<node->index; i++){
         results[resCount].fileName = node->fnf_arr[i].file_Name;
         results[resCount].frequency = node->fnf_arr[i].frequency;
@@ -422,25 +488,41 @@ void search(Node* root, string word) {
         totalHits += results[resCount].frequency;
         resCount++;
     }
+    
+    heap h;
+    for(int i=0;i<FILE_COUNT;i++){
+    	h.insert(node->fnf_arr[i]);
+	}
+	
+	h.heap_sort();
+	
+	
+	
+	
+    
+    
+    
 
     // Sort results
-    for(int i=0;i<resCount-1;i++){
-        for(int j=0;j<resCount-i-1;j++){
-            if(compareresult(results[j], results[j+1]) > 0){
-                ResultEntry temp = results[j];
-                results[j] = results[j+1];
-                results[j+1] = temp;
-            }
-        }
-    }
+//    for(int i=0;i<resCount-1;i++){
+//        for(int j=0;j<resCount-i-1;j++){
+//            if(compareresult(results[j], results[j+1]) > 0){
+//                ResultEntry temp = results[j];
+//                results[j] = results[j+1];
+//                results[j+1] = temp;
+//            }
+//        }
+//    }
 
     // Display results 
     cout << "Search results for word: " << word << endl;
-    for(int i=0;i<resCount;i++){
-        cout << i+1 << ". " << results[i].fileName 
-             << " (Frequency: " << results[i].frequency << ")" << endl;
+    int j=0;
+    for(int i=h.size;i>h.size-3;i--){
+    	
+        cout << j+1 << ". " << h.fnf_arr[i].file_Name
+             << " (Frequency: " <<h.fnf_arr[i].frequency << ")" << endl;
 
-        ifstream file(results[i].fileName);
+        ifstream file(h.fnf_arr[i].file_Name);
         if(!file.is_open()){
             cout << "  Cannot open file to show snippet." << endl;
             continue;
@@ -449,8 +531,8 @@ void search(Node* root, string word) {
         string lineText;
         int lineNum = 1;
         while(getline(file, lineText)) {
-            for(int j=0;j<results[i].linecount;j++){
-                if(results[i].linenumbers[j] == lineNum){
+            for(int j=0;j<h.fnf_arr[i].lineindex;j++){
+                if(h.fnf_arr[i].linenumbers[j] == lineNum){
                     int start = max(0, (int)lineText.find(word)-30);
                     int end = min((int)lineText.length(), start+60);
                     cout << "  Line " << lineNum << ": " << lineText.substr(start, end-start) << endl;
@@ -475,66 +557,5 @@ void deleteAVL(Node* root) {
 }
 
 
-};
-class heap{
-	public:
-	int fnf_arr[1000];
-	int size;
-	
-	heap(){
-		size=0;
-	}
-	
-	void insert(int d){
-		if(size==1000)return;
-		size++;
-		fnf_arr[size]=d;
-		int i=size;
-		while(i>1){
-			int parent=i/2;
-			
-			if(fnf_arr[parent]<fnf_arr[i]){
-			   swap(fnf_arr[parent],fnf_arr[i]);
-			   i=parent;
-			}else{
-				return;
-			}
-			
-		}
-	}
-	
-	void delete_from_heap(){
-		if(size==0)return;
-		fnf_arr[1]=fnf_arr[size];
-		size--;
-		heapify(fnf_arr,size,1);
-	}
-	
-	void heapify(int fnf_arr1[],int size1,int i){
-		int tobesort=i;
-		int left=2*i;
-		int right=2*i+1;
-				
-		if(left<=size1&&fnf_arr1[left]>fnf_arr1[tobesort]){
-			tobesort=left;
-		}
-		 if(right<=size1&&fnf_arr1[right]>fnf_arr1[tobesort]){
-		tobesort=right;
-		}
-		
-		if(i!=tobesort){
-			swap(fnf_arr1[tobesort],fnf_arr1[i]);
-			heapify(fnf_arr1,size1,tobesort);
-		}
-	
-	
-	}
-	
-	void heap_sort(){
-		for(int i=size;i>1;i--){
-			swap(fnf_arr[i],fnf_arr[1]);
-		heapify(fnf_arr,i-1,1);
-		}
-	}
 };
 
