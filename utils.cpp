@@ -1,6 +1,10 @@
 #include <iostream>
+#include <fstream>   // for ifstream
+#include <string>
 using namespace std;
+
 #define FILE_COUNT 5
+#define LINE_COUNT 100
 
 class S_Node {
 public:
@@ -17,18 +21,50 @@ public:
     string file_Name;
     int frequency;
 
-    FNF() { file_Name = ""; frequency = 0; } 
-    FNF(string v,int f){
-        frequency=f;
-        file_Name=v;
+    int linenumbers[LINE_COUNT]; // fixed size array to store line numbers
+    int lineindex;               // line index to record the total number of lines in the line numbers array
+
+    FNF() {
+        file_Name = "";
+        frequency = 0;
+        lineindex = 0;
+        for(int i=0;i<LINE_COUNT;i++) linenumbers[i]=0;
+    }
+
+    FNF(string v, int f){
+        file_Name = v;
+        frequency = f;
+        lineindex = 0;
+        for(int i=0;i<LINE_COUNT;i++) linenumbers[i]=0;
+    }
+
+    void addlinenumbers(int line) {
+        if(lineindex < LINE_COUNT){
+            linenumbers[lineindex++] = line;
+        } else {
+            cout << "LineNumbers array full for file: " << file_Name << endl;
+        }
     }
 };
+class ResultEntry {
+public:
+    string fileName;
+    int frequency;
+    int linenumbers[LINE_COUNT];
+    int linecount;
+
+    ResultEntry() { frequency = 0;
+	 linecount = 0; }
+};
+
+
 
 class Node {
 public:
     string word;
-    FNF *arr;
+    FNF *fnf_arr;
      int index=0;
+     
     Node *left;
     Node *right;
     int height;
@@ -36,36 +72,36 @@ public:
     Node(string d){
         word = d;
         height = 0;
-        arr = new FNF[FILE_COUNT]; 
+        fnf_arr = new FNF[FILE_COUNT]; 
         left = right = NULL;
     }   
     
     ~Node() { 
-	delete[] arr;
+	delete[] fnf_arr;
 	 }
 
     
-    void add_FNF(string f,int fr){
-    if(index<FILE_COUNT){
-    	arr[index++]=FNF(f,fr);
-    	return;
-	}
-    cout<<"FNF out of bound";
-    return;
-    	
-	}
+   void add_FNF(string f, int fr, int line) {
+    // Check if the file already exists in fnf_arr
+    for(int i = 0; i < index; i++) {
+        if(fnf_arr[i].file_Name == f) {
+            fnf_arr[i].frequency += fr;           // increment frequency
+            fnf_arr[i].addlinenumbers(line);       // add line number
+            return;
+        }
+    }
+
+    // if File not found then add new FNF
+    if(index < FILE_COUNT) {
+        fnf_arr[index] =FNF(f, fr);
+        fnf_arr[index].addlinenumbers(line);       // store first line number
+        index++;
+    } else {
+        cout << "FNF fnf_array full for word: " << word << std::endl;
+    }
+}
 
 
-	
-	void inc_frequency(string file_name){
-	for(int i=0;i<index;i++){
-		if(file_name==arr[i].file_Name){
-			arr[i].frequency++;
-			return;
-		}
-	}
-	add_FNF(file_name,1);
-	}
 };
 
 class Stack {
@@ -118,6 +154,11 @@ public:
         return top == nullptr;
     }
 };
+//deleting the Stack to prevent from memory leak
+void clearStack(Stack &s){
+    while(!s.isEmpty()) s.pop();
+}
+
 
 
 class Queue {
@@ -139,7 +180,7 @@ public:
             dequeue();
         }
         
-        S_Node* newNode = new Node(url);
+        S_Node* newNode = new S_Node(url);
         
         if (rear == nullptr) {
             front = rear = newNode;
@@ -181,7 +222,12 @@ public:
     bool isEmpty() {
         return front == nullptr;
     }
-};v
+};
+//deleting QUEUE prevent from memory leak
+void clearQueue(Queue &q){
+    while(!q.isEmpty()) q.dequeue();
+}
+
 
 class Avl{
 public:
@@ -228,39 +274,42 @@ Node* minValueNode(Node* root){
     return current;
 }
 
-Node* insert(Node * &root, string d,string file_name){
+Node* insert(Node* &root, string d, string file_name, int lineNumber) {
     if(root == NULL) {
-    	Node *n=new Node(d);
-    	n->add_FNF(file_name,1);
-    	return n;
-	}
-	if(d==root->word){
-		root->inc_frequency(file_name);
-		return root;
-	}
-    if(d < root->word)
-        root->left = insert(root->left, d,file_name);
-    else if(d > root->word)
-        root->right = insert(root->right, d,file_name);
-    else
-        return root;
+        Node* n = new Node(d);
+        n->add_FNF(file_name, 1, lineNumber);  //  pass line number
+        return n;
+    }
 
+    if(d == root->word) {
+        root->add_FNF(file_name, 1, lineNumber);  //  increment frequency + add line number
+        return root;
+    }
+
+    if(d < root->word)
+        root->left = insert(root->left, d, file_name, lineNumber);
+    else if(d > root->word)
+        root->right = insert(root->right, d, file_name, lineNumber);
+
+    // Update height and balance
     root->height = calculate_Height(root);
     int b = bf(root);
 
-    if(b > 1){ // left heavy
+    // Left heavy
+    if(b > 1) {
         if(d < root->left->word)
             return rotate_right(root);
-        else{
+        else {
             root->left = rotate_left(root->left);
             return rotate_right(root);
         }
     }
 
-    if(b < -1){ // right heavy
+    // Right heavy
+    if(b < -1) {
         if(d > root->right->word)
             return rotate_left(root);
-        else{
+        else {
             root->right = rotate_right(root->right);
             return rotate_left(root);
         }
@@ -319,9 +368,9 @@ Node* deleteNode(Node* root, string d){
     return root;
 }
 
-void printarr(int j,Node *root){
+void printfnf_arr(int j,Node *root){
 	for(int i=0;i<j;i++){
-		cout<< " "<<root->arr[i].file_Name<< " "<<root->arr[i].frequency<<" " ;
+		cout<< " "<<root->fnf_arr[i].file_Name<< " "<<root->fnf_arr[i].frequency<<" " ;
 	}
 	cout<<endl;
 }
@@ -330,13 +379,106 @@ void inorder(Node* root){
     if(root == NULL) return;
     inorder(root->left);
     cout << root->word << " ";
-    printarr(root->index,root);
+    printfnf_arr(root->index,root);
     inorder(root->right);
 }
+// make search if found or not 
+int compareresult(ResultEntry a, ResultEntry b){
+    if(a.frequency != b.frequency)
+        return b.frequency - a.frequency;  // descending frequency
+    return a.fileName < b.fileName ? -1 : 1;  // filename ascending
+}
+
+Node* search_Node(Node* root, string word) {
+    if(root == NULL) return NULL;
+
+    if(word == root->word)
+        return root;
+    else if(word < root->word)
+        return search_Node(root->left, word);
+    else
+        return search_Node(root->right, word);
+}
+
+
+void search(Node* root, string word) {
+    Node* node = search_Node(root, word);
+    if(node == NULL){
+        cout << "No results found for word: " << word << endl;
+        return;
+    }
+
+    // Convert FNF fnf_array to resultentry fnf_array
+    ResultEntry results[FILE_COUNT];
+    int resCount = 0;
+    int totalHits = 0;
+
+    for(int i=0; i<node->index; i++){
+        results[resCount].fileName = node->fnf_arr[i].file_Name;
+        results[resCount].frequency = node->fnf_arr[i].frequency;
+        results[resCount].linecount = node->fnf_arr[i].lineindex;
+        for(int j=0;j<node->fnf_arr[i].lineindex;j++)
+            results[resCount].linenumbers[j] = node->fnf_arr[i].linenumbers[j];
+        totalHits += results[resCount].frequency;
+        resCount++;
+    }
+
+    // Sort results
+    for(int i=0;i<resCount-1;i++){
+        for(int j=0;j<resCount-i-1;j++){
+            if(compareresult(results[j], results[j+1]) > 0){
+                ResultEntry temp = results[j];
+                results[j] = results[j+1];
+                results[j+1] = temp;
+            }
+        }
+    }
+
+    // Display results 
+    cout << "Search results for word: " << word << endl;
+    for(int i=0;i<resCount;i++){
+        cout << i+1 << ". " << results[i].fileName 
+             << " (Frequency: " << results[i].frequency << ")" << endl;
+
+        ifstream file(results[i].fileName);
+        if(!file.is_open()){
+            cout << "  Cannot open file to show snippet." << endl;
+            continue;
+        }
+
+        string lineText;
+        int lineNum = 1;
+        while(getline(file, lineText)) {
+            for(int j=0;j<results[i].linecount;j++){
+                if(results[i].linenumbers[j] == lineNum){
+                    int start = max(0, (int)lineText.find(word)-30);
+                    int end = min((int)lineText.length(), start+60);
+                    cout << "  Line " << lineNum << ": " << lineText.substr(start, end-start) << endl;
+                }
+            }
+            lineNum++;
+        }
+        file.close();
+    }
+
+    cout << "Total hits: " << totalHits << endl;
+    cout << "Files matched: " << resCount << endl;
+}
+//Deleting AVL class prevent from memory leak
+void deleteAVL(Node* root) {
+    if(root == NULL) return;
+
+    deleteAVL(root->left);
+    deleteAVL(root->right);
+
+    delete root; 
+}
+
+
 };
 class heap{
 	public:
-	int arr[1000];
+	int fnf_arr[1000];
 	int size;
 	
 	heap(){
@@ -346,13 +488,13 @@ class heap{
 	void insert(int d){
 		if(size==1000)return;
 		size++;
-		arr[size]=d;
+		fnf_arr[size]=d;
 		int i=size;
 		while(i>1){
 			int parent=i/2;
 			
-			if(arr[parent]<arr[i]){
-			   swap(arr[parent],arr[i]);
+			if(fnf_arr[parent]<fnf_arr[i]){
+			   swap(fnf_arr[parent],fnf_arr[i]);
 			   i=parent;
 			}else{
 				return;
@@ -363,26 +505,26 @@ class heap{
 	
 	void delete_from_heap(){
 		if(size==0)return;
-		arr[1]=arr[size];
+		fnf_arr[1]=fnf_arr[size];
 		size--;
-		heapify(arr,size,1);
+		heapify(fnf_arr,size,1);
 	}
 	
-	void heapify(int arr1[],int size1,int i){
+	void heapify(int fnf_arr1[],int size1,int i){
 		int tobesort=i;
 		int left=2*i;
 		int right=2*i+1;
 				
-		if(left<=size1&&arr1[left]>arr1[tobesort]){
+		if(left<=size1&&fnf_arr1[left]>fnf_arr1[tobesort]){
 			tobesort=left;
 		}
-		 if(right<=size1&&arr1[right]>arr1[tobesort]){
+		 if(right<=size1&&fnf_arr1[right]>fnf_arr1[tobesort]){
 		tobesort=right;
 		}
 		
 		if(i!=tobesort){
-			swap(arr1[tobesort],arr1[i]);
-			heapify(arr1,size1,tobesort);
+			swap(fnf_arr1[tobesort],fnf_arr1[i]);
+			heapify(fnf_arr1,size1,tobesort);
 		}
 	
 	
@@ -390,23 +532,9 @@ class heap{
 	
 	void heap_sort(){
 		for(int i=size;i>1;i--){
-			swap(arr[i],arr[1]);
-		heapify(arr,i-1,1);
+			swap(fnf_arr[i],fnf_arr[1]);
+		heapify(fnf_arr,i-1,1);
 		}
 	}
 };
 
-//int main(){
-//   
-//    int arr[5]={3,42,8,32,77};
-//    heap h;
-//   for(int i=(5/2)-1;i>=0;i--){
-//    h.heapify(arr,4,i);
-//}
-//	
-//	for(int i=0;i<5;i++){
-//		cout<<arr[i]<<" ";
-//	}
-//
-//    return 0;
-//}
