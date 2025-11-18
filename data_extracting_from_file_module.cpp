@@ -44,7 +44,7 @@ void extract_from_files(vector<string>& files,Avl* &avl,Node * &root) {
                         string cleaned = remove_unwanted_characters(word);
                         if (!cleaned.empty() && stopwords.find(cleaned) == stopwords.end()) {
                         
-							root=avl->insert(root,cleaned,files[i]);
+							root=avl->insert(root,cleaned,files[i],lineNumber);
 							 cout << cleaned  << " (" << files[i] << ", line " << lineNumber << ")" << endl;
 
 							
@@ -73,7 +73,7 @@ int main() {
         return 1;
     }
     Node* root = new Node(firstWord);
-    root->add_FNF(files[0], 1); 
+    root->add_FNF(files[0], 1,1); 
 
     
     extract_from_files(files, avl, root);
@@ -81,7 +81,7 @@ int main() {
     cout << "\n\nInorder traversal of AVL (unique words):\n";
     avl->inorder(root);
     cout << endl;
-
+avl->search(root,"ahmad");
     delete avl;  
     return 0;
 }
