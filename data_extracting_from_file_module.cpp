@@ -5,7 +5,7 @@
 #include <vector>
 #include <cctype>
 #include "utils.cpp"
-//from hamza
+
 using namespace std;
 unordered_set<string> stopwords = { "a","an","and","are","as","at","be","but","by",
                                     "for","if","in","into","is","it","no","not","of",
