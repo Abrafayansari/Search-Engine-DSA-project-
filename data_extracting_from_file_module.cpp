@@ -25,7 +25,7 @@ string remove_unwanted_characters(const string& s) {
 }
 
 // Extract words from files and print non-stopwords with line numbers
-void extract_from_files(vector<string>& files,Avl* &avl,Node * &root) {
+void extract_from_files(vector<string>& files,Avl* &avl,Node * &root,Trie &trie) {
     for (int i = 0; i < files.size(); i++) {
         ifstream file(files[i].c_str());
         if (!file) {
@@ -46,7 +46,7 @@ void extract_from_files(vector<string>& files,Avl* &avl,Node * &root) {
                         if(rooted){
                         	root=avl->insert(root,cleaned,files[i],lineNumber);
 							 cout << cleaned  << " (" << files[i] << ", line " << lineNumber << ")" << endl;
-
+							trie->insert(cleaned);
 						}else{
 							rooted=true;
 						}
@@ -64,7 +64,8 @@ void extract_from_files(vector<string>& files,Avl* &avl,Node * &root) {
 }
 
 int main() {
-    Avl *avl = new Avl();          // initialize AVL
+    Avl *avl = new Avl();
+	Trie trie;          // initialize AVL
     vector<string> files = {"t1.txt", "t2.txt"};
 Stack browsinghistory;
     Queue recentsearches;
@@ -108,13 +109,19 @@ Stack browsinghistory;
         cout << "===========================\n";
         cout << "Enter choice: ";
         cin >> choice;
-		cout<<endl;
-        switch (choice) {
+        if(choice<1||choice >7){
+        	cout<<"\n Invalid";
+		}else{
+			 switch (choice) {
             case 1:
                 cout << "Enter search word: ";
                 cin>>query;
                 if (!query.empty()) {
                 cout<<"Results .........\n";
+                 cin.clear();
+//            string dummy;
+//			 getline(cin, dummy);
+//            liveAutocompleteMode(trie);
   avl->search(root,remove_unwanted_characters(query),browsinghistory,recentsearches);
   
                 }
@@ -149,7 +156,11 @@ Stack browsinghistory;
 
             default:
                 cout << "Invalid choice" << endl;
+                break;
         }
+		}
+		cout<<endl;
+       
 
     } while (choice != 7);
 delete avl;
