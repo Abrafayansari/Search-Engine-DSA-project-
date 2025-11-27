@@ -13,166 +13,18 @@ using namespace std;
 #define FILE_COUNT 2
 #define LINE_COUNT 100
 
-class trie_node {
-public:
-    TrieNode* children[26];
-    bool isEnd;
-    TrieNode() {
-        isEnd = false;
-        for (int i = 0; i < 26; ++i) children[i] = nullptr;
-    }
-};
-class Trie {
-public:
-    trie_node* root;
-    Trie() { root = new trie_node(); }
 
-    static string normalize(const string &s) {
-        string out;
-        for (char c : s) 
-            if (isalpha((unsigned char)c))
-                out.push_back((char)tolower((unsigned char)c));
-            
-        return out;
-        
-    }
-
-    void insert(const string &rawWord) {
-        string word = normalize(rawWord);
-        if (word.empty()) return;
-
-        trie_node* cur = root;
-        for (char ch : word) {
-            int idx = ch - 'a';
-            if (!cur->children[idx]) cur->children[idx] = new trie_node();
-            cur = cur->children[idx];
-        }
-        cur->isend = true;
-    }
-
-    void collect(trie_node* node, const string &prefix, vector<string> &out, int limit = 50) {
-        if (!node) return;
-        if (node->isend) {
-            out.push_back(prefix);
-            if ((int)out.size() >= limit) return;
-        }
-        for (int i = 0; i < 26 && (int)out.size() < limit; ++i) {
-            if (node->children[i]) {
-                collect(node->children[i], prefix + char('a' + i), out, limit);
-            }
+string remove_unwanted_characters(const string& s) {
+    string s1 = "";
+    for (int i = 0; i < s.length(); i++) {
+        if ((s[i] >= 'A' && s[i] <= 'Z') || 
+            (s[i] >= 'a' && s[i] <= 'z') || 
+            (s[i] >= '0' && s[i] <= '9')) {
+            s1 += tolower(s[i]);
         }
     }
-
-    vector<string> suggestions(const string &rawPrefix, int limit = 50) {
-        string prefix = normalize(rawPrefix);
-        vector<string> out;
-
-        trie_node* cur = root;
-        for (char ch : prefix) {
-            int idx = ch - 'a';
-            if (!cur->children[idx]) return out;
-            cur = cur->children[idx];
-        }
-
-        collect(cur, prefix, out, limit);
-        return out;
-    }
-
-
-void setColor(int color) {
-    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(h, color);
+    return s1;
 }
-
-void renderInputWithGhost(const string &typed, const string &ghost) {
-    setColor(7);
-    cout << "Search: " << typed;
-
-    if (!ghost.empty()) {
-        if (ghost.size() >= typed.size() && ghost.substr(0, typed.size()) == typed) {
-            string rem = ghost.substr(typed.size());
-            setColor(8);
-            cout << rem;
-            setColor(7);
-        }
-    }
-    cout << "\n\n";
-}
-
-
-void liveAutocompleteMode(Trie &trie) {
-    string typed = "";
-    string ghost = "";
-
-    cout << "Live inline autocomplete mode.\n";
-    cout << "TAB to accept suggestion, ENTER to submit, ESC to return\n\n";
-
-    fflush(stdin);
-
-    while (true) {
-        vector<string> sug = trie.suggestions(typed, 20);
-        ghost = (!sug.empty() ? "Search !!!!" : typed);
-
-        system("cls");
-        renderInputWithGhost(typed, ghost);
-
-        cout << "Suggestions:\n";
-        vector<string> show = trie.suggestions(typed, 8);
-        if (show.empty()) cout << "  (none)\n";
-        else {
-            for (size_t i = 0; i < show.size(); i++) {
-                if (i == 0) {
-                    setColor(144);
-                    cout << "  " << show[i] << "  <- top\n";
-                    setColor(7);
-                } else {
-                    cout << "  " << show[i] << "\n";
-                }
-            }
-        }
-
-        cout << "\n(ESC to return)\n";
-
-        int ch = _getch();
-
-        if (ch == 27) return;
-        if (ch == 13) {
-            system("cls");
-            cout << "Search submitted: " << typed << "\n";
-            vector<string> results = trie.suggestions(typed, 20);
-
-            if (results.empty()) cout << "No results.\n";
-            else {
-                for (size_t i = 0; i < results.size(); i++)
-                    cout << i + 1 << ". " << results[i] << "\n";
-            }
-            cout << "\nPress any key...";
-            _getch();
-            return;
-        }
-        if (ch == 9) { // TAB
-            if (!ghost.empty()) typed = ghost;
-            continue;
-        }
-        if (ch == 8) { // BACKSPACE
-            if (!typed.empty()) typed.pop_back();
-            continue;
-        }
-        if (isalpha(ch)) typed.push_back((char)tolower(ch));
-    }
-}
-
-
-//    void preloadSamples() {
-//        vector<string> sample = {
-//            "cat","cap","car","care","carbon","cart","cartoon","cater",
-//            "dog","door","dot","dove","data","date",
-//            "apple","apply","application","apt","aptitude",
-//            "search","sea","season","second","secure"
-//        };
-//        for (auto &w : sample) insert(w);
-//    }
-};
 class S_Node {
 public:
     string data;
@@ -271,67 +123,14 @@ public:
 
 };
 
-
-class heap{
-	public:
-	FNF fnf_arr[1000];
-	int size;
-	
-	heap(){
-		size=0;
-	}
-	
-	void insert(FNF d){
-		if(size==1000)return;
-		size++;
-		fnf_arr[size]=d;
-		int i=size;
-		while(i>1){
-			int parent=i/2;
-			
-			if(fnf_arr[parent].frequency<fnf_arr[i].frequency){
-			   swap(fnf_arr[parent],fnf_arr[i]);
-			   i=parent;
-			}else{
-				return;
-			}
-			
-		}
-	}
-	
-//	void delete_from_heap(){
-//		if(size==0)return;
-//		fnf_arr[1]=fnf_arr[size];
-//		size--;
-//		heapify(fnf_arr,size,1);
-//	}
-	
-	void heapify(FNF fnf_arr1[],int size1,int i){
-		int tobesort=i;
-		int left=2*i;
-		int right=2*i+1;
-				
-		if(left<=size1&&fnf_arr1[left].frequency>fnf_arr1[tobesort].frequency){
-			tobesort=left;
-		}
-		 if(right<=size1&&fnf_arr1[right].frequency>fnf_arr1[tobesort].frequency){
-		tobesort=right;
-		}
-		
-		if(i!=tobesort){
-			swap(fnf_arr1[tobesort],fnf_arr1[i]);
-			heapify(fnf_arr1,size1,tobesort);
-		}
-	
-	
-	}
-	
-	void heap_sort(){
-		for(int i=size;i>1;i--){
-			swap(fnf_arr[i],fnf_arr[1]);
-		heapify(fnf_arr,i-1,1);
-		}
-	}
+class trie_node {
+public:
+    trie_node* children[26];
+    bool isend;
+    trie_node() {
+        isend = false;
+        for (int i = 0; i < 26; ++i) children[i] = nullptr;
+    }
 };
 
 
@@ -459,6 +258,75 @@ public:
 void clearQueue(Queue &q){
     while(!q.isEmpty()) q.dequeue();
 }
+
+
+class heap{
+	public:
+	FNF fnf_arr[1000];
+	int size;
+	
+	heap(){
+		size=0;
+	}
+	
+	void insert(FNF d){
+		if(size==1000)return;
+		size++;
+		fnf_arr[size]=d;
+		int i=size;
+		while(i>1){
+			int parent=i/2;
+			
+			if(fnf_arr[parent].frequency<fnf_arr[i].frequency){
+			   swap(fnf_arr[parent],fnf_arr[i]);
+			   i=parent;
+			}else{
+				return;
+			}
+			
+		}
+	}
+	
+//	void delete_from_heap(){
+//		if(size==0)return;
+//		fnf_arr[1]=fnf_arr[size];
+//		size--;
+//		heapify(fnf_arr,size,1);
+//	}
+	
+	void heapify(FNF fnf_arr1[],int size1,int i){
+		int tobesort=i;
+		int left=2*i;
+		int right=2*i+1;
+				
+		if(left<=size1&&fnf_arr1[left].frequency>fnf_arr1[tobesort].frequency){
+			tobesort=left;
+		}
+
+		 if(right<=size1&&fnf_arr1[right].frequency>fnf_arr1[tobesort].frequency){
+		tobesort=right;
+		}
+		
+		if(i!=tobesort){
+			swap(fnf_arr1[tobesort],fnf_arr1[i]);
+			heapify(fnf_arr1,size1,tobesort);
+		}
+	
+	
+	}
+	
+	void heap_sort(){
+		for(int i=size;i>1;i--){
+			swap(fnf_arr[i],fnf_arr[1]);
+		heapify(fnf_arr,i-1,1);
+		}
+	}
+};
+
+
+
+
+
 
 
 class Avl{
@@ -703,7 +571,8 @@ q.enqueue(word);
                     int start = max(0, (int)lineText.find(word)-30);
                     int end = min((int)lineText.length(), start+60);
                     cout << "  Line " << lineNum << ": " << lineText.substr(start, end-start) << endl;
-                }
+                
+				}
             }
             lineNum++;
         }
@@ -725,3 +594,193 @@ void deleteAVL(Node* root) {
 
 
 };
+
+class Trie {
+public:
+    trie_node* root;
+    Trie() { root = new trie_node(); }
+
+    static string normalize(const string &s) {
+        string out;
+        for (char c : s) 
+            if (isalpha((unsigned char)c))
+                out.push_back((char)tolower((unsigned char)c));
+            
+        return out;
+        
+    }
+
+    void insert(const string &rawWord) {
+        string word = normalize(rawWord);
+        if (word.empty()) return;
+
+        trie_node* cur = root;
+        for (char ch : word) {
+            int idx = ch - 'a';
+            if (!cur->children[idx]) cur->children[idx] = new trie_node();
+            cur = cur->children[idx];
+        }
+        cur->isend = true;
+    }
+
+    void collect(trie_node* node, const string &prefix, vector<string> &out, int limit = 50) {
+        if (!node) return;
+        if (node->isend) {
+            out.push_back(prefix);
+            if ((int)out.size() >= limit) return;
+        }
+        for (int i = 0; i < 26 && (int)out.size() < limit; ++i) {
+            if (node->children[i]) {
+                collect(node->children[i], prefix + char('a' + i), out, limit);
+            }
+        }
+    }
+
+    vector<string> suggestions(const string &rawPrefix, int limit = 50) {
+        string prefix = normalize(rawPrefix);
+        vector<string> out;
+
+        trie_node* cur = root;
+        for (char ch : prefix) {
+            int idx = ch - 'a';
+            if (!cur->children[idx]) return out;
+            cur = cur->children[idx];
+        }
+
+        collect(cur, prefix, out, limit);
+        return out;
+    }
+
+
+void setColor(int color) {
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(h, color);
+}
+
+void renderInputWithGhost(const string &typed, const string &ghost) {
+    setColor(7);
+    cout << "Search: " << typed;
+
+    if (!ghost.empty()) {
+        if (ghost.size() >= typed.size() && ghost.substr(0, typed.size()) == typed) {
+            string rem = ghost.substr(typed.size());
+            setColor(8);
+            cout << rem;
+            setColor(7);
+        }
+    }
+    cout << "\n\n";
+}
+
+
+void liveAutocompleteMode(Trie &trie, Avl* &avl, Node* root, Stack &s, Queue &q) {
+
+    string typed = "";
+    string ghost = "";
+
+    cout << "Live inline autocomplete mode.\n";
+    cout << "TAB to accept suggestion, ENTER to submit, ESC to return\n\n";
+    fflush(stdin);
+
+    while (true) {
+
+        vector<string> sug = trie.suggestions(typed, 20);
+        ghost = (!sug.empty() ? sug[0] : "");
+
+        system("cls");
+        renderInputWithGhost(typed, ghost);
+
+        // show suggestions
+        cout << "Suggestions:\n";
+        vector<string> show;
+        for (size_t i = 0; i < sug.size() && i < 8; i++)
+            show.push_back(sug[i]);
+
+        if (show.empty()) cout << "  (none)\n";
+        else {
+            for (size_t i = 0; i < show.size(); i++) {
+                if (i == 0) {
+                    setColor(144);
+                    cout << "  " << show[i] << "  <- top\n";
+                    setColor(7);
+                } else {
+                    cout << "  " << show[i] << "\n";
+                }
+            }
+        }
+
+        cout << "\n(ESC to return)\n";
+
+        // Read key
+        int ch = _getch();
+
+        // ---------------------------
+        // ESC
+        // ---------------------------
+        if (ch == 27) return;
+
+        // ---------------------------
+        // ENTER
+        // ---------------------------
+        if (ch == 13) {
+            system("cls");
+            cout << "Search submitted: " << typed << "\n";
+            avl->search(root, remove_unwanted_characters(typed), s, q);
+            cout << "\nPress any key...";
+            _getch();
+            return;
+        }
+
+        // ---------------------------
+        // TAB
+        // ---------------------------
+        if (ch == 9) {
+            if (!ghost.empty()) typed = ghost;
+            continue;
+        }
+
+        // ---------------------------
+        // BACKSPACE
+        // ---------------------------
+        if (ch == 8) {
+            if (!typed.empty()) typed.pop_back();
+            continue;
+        }
+
+        // ---------------------------
+        // SPECIAL KEYS (arrow keys, F1-F12)
+        // They come in pairs: first 224 or 0
+        // Ignore them completely
+        // ---------------------------
+        if (ch == 224 || ch == 0) {
+            _getch(); // swallow second byte
+            continue;
+        }
+
+        // ---------------------------
+        // Accept alphabets only
+        // ---------------------------
+        if (isalpha(ch)) {
+            typed.push_back((char)tolower(ch));
+            continue;
+        }
+
+        // ---------------------------
+        // Ignore all other keys
+        // ---------------------------
+        continue;
+    }
+}
+
+
+//    void preloadSamples() {
+//        vector<string> sample = {
+//            "cat","cap","car","care","carbon","cart","cartoon","cater",
+//            "dog","door","dot","dove","data","date",
+//            "apple","apply","application","apt","aptitude",
+//            "search","sea","season","second","secure"
+//        };
+//        for (auto &w : sample) insert(w);
+//    }
+};
+
