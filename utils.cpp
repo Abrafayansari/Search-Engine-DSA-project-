@@ -13,6 +13,21 @@ using namespace std;
 
 #define FILE_COUNT 20
 #define LINE_COUNT 100
+    vector<string> all_files = {"t1.txt", "t2.txt"};
+
+
+ 
+string remove_unwanted_characters(const string& s) {
+    string s1 = "";
+    for (int i = 0; i < s.length(); i++) {
+        if ((s[i] >= 'A' && s[i] <= 'Z') ||
+            (s[i] >= 'a' && s[i] <= 'z') ||
+            (s[i] >= '0' && s[i] <= '9')) {
+            s1 += tolower(s[i]);
+        }
+    }
+    return s1;
+}
 
 
  
@@ -121,18 +136,103 @@ void extractSentence(const char *buffer, int len, int pos, char *result) {
     result[idx] = '\0';
 }
 
+ void searchPhrase(const string &phrase) {
+    cout << "Phrase search for: " << phrase << "\n";
 
-
-string remove_unwanted_characters(const string& s) {
-    string s1 = "";
-    for (int i = 0; i < s.length(); i++) {
-        if ((s[i] >= 'A' && s[i] <= 'Z') ||
-            (s[i] >= 'a' && s[i] <= 'z') ||
-            (s[i] >= '0' && s[i] <= '9')) {
-            s1 += tolower(s[i]);
-        }
+    // build finalPattern: keep letters/digits and spaces, lowercase
+    string finalPattern;
+    for (char c : phrase) {
+        if (isalnum((unsigned char)c) || c == ' ')
+            finalPattern += (char)tolower((unsigned char)c);
     }
-    return s1;
+    if (finalPattern.empty()) {
+        cout << "Invalid phrase!\n";
+        return;
+    }
+
+    // replace this with your actual file-list or t1..t20 naming scheme
+    // here I keep your t1..t20 loop as in your snippet
+    for (int f = 1; f <= 20; ++f) {
+        string filename = "t" + to_string(f) + ".txt";
+        char buffer[100000];
+        int len = 0;
+        if (!readFileIntoCharArray(filename, buffer, len)) continue;
+
+        // lowercase buffer for case-insensitive match
+        static char lowerBuf[100000];
+        for (int i = 0; i < len; ++i) lowerBuf[i] = tolower(buffer[i]);
+        lowerBuf[len] = '\0';
+
+        int start = 0;
+        bool found = false;
+        while (start < len) {
+            int pos = KMP(lowerBuf + start, len - start, finalPattern);
+            if (pos == -1) break;
+            pos += start;                // convert local->global index
+            found = true;
+
+            // extract sentence from original buffer (preserve original casing)
+            char sentence[2000];
+            extractSentence(buffer, len, pos, sentence);
+            cout << "In " << filename << ": " << sentence << "\n";
+
+            // advance past the matched phrase to avoid duplicates
+            start = pos + (int)finalPattern.length();
+        }
+        if (found) cout << "-------------------------------------\n";
+    }
+}
+
+string lastToken(const string &s) {
+    int i = s.length() - 1;
+    while (i >= 0 && s[i] == ' ') i--;
+    int end = i;
+    while (i >= 0 && s[i] != ' ') i--;
+    return s.substr(i + 1, end - i);
+}	
+
+
+void fullStringSearch(const string &query) {
+    // build finalPattern similar to searchPhrase:
+    string finalPattern;
+    for (char c : query) {
+        if (isalnum((unsigned char)c) || c == ' ')
+            finalPattern += (char)tolower((unsigned char)c);
+    }
+    if (finalPattern.empty()) return;
+
+    cout << "Full string search: " << query << endl;
+
+    // If you don't have all_files vector, replace this loop with your t1..t20 scheme
+    for (const string &file : all_files) {
+        char buffer[100000];
+        int len = 0;
+        if (!readFileIntoCharArray(file, buffer, len)) continue;
+
+        static char lowerBuf[100000];
+        for (int i = 0; i < len; ++i) lowerBuf[i] = tolower(buffer[i]);
+        lowerBuf[len] = '\0';
+
+        int start = 0;
+        bool printedHeader = false;
+        while (start < len) {
+            int pos = KMP(lowerBuf + start, len - start, finalPattern);
+            if (pos == -1) break;
+            pos += start;
+
+            if (!printedHeader) {
+                cout << "In " << file << ":\n";
+                printedHeader = true;
+            }
+
+            char sentence[2000];
+            extractSentence(buffer, len, pos, sentence);
+            cout << "  Sentence: " << sentence << endl;
+
+            start = pos + (int)finalPattern.length();
+        }
+        if (printedHeader) cout << "-------------------------------------\n";
+    }
 }
 class S_Node {
 public:
@@ -607,26 +707,42 @@ cout<<"NULL\n";
 
 }
 }
-
 void searchword(const string &wordRaw, Stack &s, Queue &q) {
-    string word = remove_unwanted_characters(wordRaw);
-
+    string word = wordRaw;
     if (word.empty()) {
         cout << "No results found.\n";
         return;
     }
 
+    // Detect multi-word
+    bool isMultiWord = false;
+    for (char c : word) {
+        if (c == ' ') { isMultiWord = true; break; }
+    }
+
+    // ---------------------------------------------------------
+    // CASE 1: Multi‑word query → Entire string search using KMP
+    // ---------------------------------------------------------
+    if (isMultiWord) {
+        s.push(word);
+        q.enqueue(word);
+        fullStringSearch(word);   // you already have buffer‑KMP working
+        return;
+    }
+
+    // ---------------------------------------------------------
+    // CASE 2: Normal single-word search (hash + trie)
+    // ---------------------------------------------------------
     Node *node = search(word);
     if (!node) {
         cout << "No results found.\n";
         return;
     }
 
-    // History
     s.push(word);
     q.enqueue(word);
 
-    // Build heap (sorted by frequency)
+    // Build heap with FNF entries
     heap h;
     for (int i = 0; i < node->index; i++)
         h.insert(node->fnf_arr[i]);
@@ -634,7 +750,7 @@ void searchword(const string &wordRaw, Stack &s, Queue &q) {
 
     cout << "Search results for: " << word << endl;
 
-    // For each file that contains the word
+    // Loop through every file
     for (int k = 0; k < node->index; k++) {
 
         cout << k + 1 << ". " << node->fnf_arr[k].file_Name
@@ -648,37 +764,33 @@ void searchword(const string &wordRaw, Stack &s, Queue &q) {
             continue;
         }
 
-        // ---- Make lowercase copy of buffer (for case-insensitive searching) ----
+        // Build lowercase buffer for case‑insensitive KMP
         static char lowerBuf[100000];
         for (int i = 0; i < len; ++i)
             lowerBuf[i] = tolower(buffer[i]);
         lowerBuf[len] = '\0';
 
-        // ---- ALSO lowercase the search word ----
-        string lowWord = word;
-        for (char &c : lowWord) c = tolower(c);
-
         int start = 0;
+        int wlen = word.length();
+
+        // Run KMP repeatedly to extract ALL sentences
         while (start < len) {
 
-            int pos = KMP(lowerBuf + start, len - start, lowWord);
-            if (pos == -1) break;      // no more matches
-            pos += start;               // convert local index → global
+            int position = KMP(lowerBuf + start, len - start, word);
 
-            // ----- Extract sentence -----
+            if (position == -1) break; // no more matches
+
+            position += start; // convert local → global index
+
             char sentence[2000];
-            extractSentence(buffer, len, pos, sentence);
+            extractSentence(buffer, len, position, sentence);
+
             cout << "  Sentence: " << sentence << endl;
 
-            // ----- Skip ahead to next punctuation instead of skipping word length -----
-            while (pos < len && buffer[pos] != '.' && buffer[pos] != '?' && buffer[pos] != '!')
-                pos++;
-
-            start = pos + 1;            // move to next sentence
+            start = position + wlen; // skip past match
         }
     }
 }
-
 
 
 //void searchword(const string &wordRaw, Stack &s, Queue &q) {
@@ -844,23 +956,30 @@ void renderInputWithGhost(const string &typed, const string &ghost) {
 
 
 void liveAutocompleteMode(Trie &trie, separate_chaining &table, Stack &s, Queue &q) {
-
     string typed = "";
     string ghost = "";
-
     cout << "Live inline autocomplete mode.\n";
     cout << "TAB to accept suggestion, ENTER to submit, ESC to return\n\n";
     fflush(stdin);
 
     while (true) {
 
-        vector<string> sug = trie.suggestions(typed, 20);
-        ghost = (!sug.empty() ? sug[0] : "");
+        // 🔥 STEP 1: Detect last token for multi-word suggestion
+        string token = lastToken(typed);  // last word user is typing
+        vector<string> sug;
 
+        if (token.empty()) {
+            sug = {};
+            ghost = "";
+        } else {
+            sug = trie.suggestions(token, 20);
+            ghost = (!sug.empty() ? sug[0] : "");
+        }
+
+        // 🔥 STEP 2: Render the UI
         system("cls");
         renderInputWithGhost(typed, ghost);
 
-        // show suggestions
         cout << "Suggestions:\n";
         vector<string> show;
         for (size_t i = 0; i < sug.size() && i < 8; i++)
@@ -881,63 +1000,59 @@ void liveAutocompleteMode(Trie &trie, separate_chaining &table, Stack &s, Queue 
 
         cout << "\n(ESC to return)\n";
 
-        // Read key
+        // 🔥 STEP 3: Read key
         int ch = _getch();
 
-        // ---------------------------
         // ESC
-        // ---------------------------
         if (ch == 27) return;
 
-        // ---------------------------
-        // ENTER
-        // ---------------------------
+        // ENTER → submit search
         if (ch == 13) {
             system("cls");
             cout << "Search submitted: " << typed << "\n";
-            table.searchword( remove_unwanted_characters(typed), s, q);
+
+            string cleaned = remove_unwanted_characters(typed);
+
+            if (typed.find(' ') != string::npos) {
+                searchPhrase(typed); // full string search
+            } else {
+                table.searchword(cleaned, s, q);
+            }
+
             cout << "\nPress any key...";
             _getch();
             return;
         }
 
-        // ---------------------------
-        // TAB
-        // ---------------------------
+        // TAB → autocomplete using ghost text
         if (ch == 9) {
-            if (!ghost.empty()) typed = ghost;
+            if (!ghost.empty() && !token.empty()) {
+
+                // Replace ONLY the last token
+                typed = typed.substr(0, typed.size() - token.size()) + ghost;
+            }
             continue;
         }
 
-        // ---------------------------
         // BACKSPACE
-        // ---------------------------
         if (ch == 8) {
             if (!typed.empty()) typed.pop_back();
             continue;
         }
 
-        // ---------------------------
-        // SPECIAL KEYS (arrow keys, F1-F12)
-        // They come in pairs: first 224 or 0
-        // Ignore them completely
-        // ---------------------------
+        // SPECIAL KEYS (ignore)
         if (ch == 224 || ch == 0) {
-            _getch(); // swallow second byte
+            _getch();
             continue;
         }
 
-        // ---------------------------
-        // Accept alphabets only
-        // ---------------------------
-        if (isalpha(ch)) {
+        // Accept alphabets + space (important for multi‑word)
+        if (isalpha(ch) || ch == ' ') {
             typed.push_back((char)tolower(ch));
             continue;
         }
 
-        // ---------------------------
-        // Ignore all other keys
-        // ---------------------------
+        // Ignore everything else
         continue;
     }
 }
