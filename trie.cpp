@@ -13,7 +13,8 @@ using namespace std;
 class trie_node {
 public:
     trie_node* children[26];
-    bool isend;
+    bool ise
+	2nd;
     trie_node() {
         isend = false;
         for (int i = 0; i < 26; ++i) children[i] = nullptr;
