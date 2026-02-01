@@ -1,145 +1,143 @@
-🔍 DSA Search Engine
-A Data Structures & Algorithms based Search Engine built as an academic project.
-This project demonstrates the practical implementation of core DSA concepts such as Trie, Hashing, KMP Algorithm, Stack, Queue, and Heap to efficiently search words and phrases from text documents.
+# 🔍 DSA Search Engine
 
-📌 Project Overview
-The DSA Search Engine allows users to:
+A **Data Structures & Algorithms (DSA)** based search engine built as an academic project. This project demonstrates practical implementations of core DSA concepts, including **Trie, Hashing, KMP Algorithm, Stack, Queue, and Heap**, to efficiently search words and phrases in text documents.
 
-Search single words and multi‑word phrases
+---
 
-Get fast autocomplete suggestions
+## 📌 Project Overview
 
-View search history and recent searches
+The DSA Search Engine enables users to:
 
-Perform case‑insensitive and cleaned searches
+* Search **single words** and **multi-word phrases**
+* Get **fast autocomplete suggestions**
+* View **search history** and **recent searches**
+* Perform **case-insensitive** and **cleaned searches**
+* Search efficiently across **multiple text files**
 
-Efficiently search within multiple text files
+This project emphasizes **performance, correctness, and the real-world application of data structures** rather than relying on built-in libraries.
 
-The project focuses on performance, correctness, and real‑world use of data structures rather than relying on built‑in libraries.
+---
 
-🧠 Data Structures & Algorithms Used
-Component	Purpose
-Trie	Autocomplete suggestions & prefix searching
-Hash Table (Separate Chaining)	Fast word indexing and lookup
-KMP Algorithm	Efficient full‑string / phrase searching
-Stack	Browsing history (Back navigation)
-Queue	Recent searches tracking
-Heap	Sorting results based on frequency
-Linear Probing Hashing	Stop‑word filtering
-✨ Key Features
-🔎 Single Word Search
+## 🧠 Data Structures & Algorithms Used
 
-🧾 Full Phrase Search (e.g., “computer science”)
+| Component                      | Purpose                               |
+| ------------------------------ | ------------------------------------- |
+| Trie                           | Autocomplete & prefix searching       |
+| Hash Table (Separate Chaining) | Fast word indexing and lookup         |
+| KMP Algorithm                  | Efficient full-string / phrase search |
+| Stack                          | Browsing history (Back navigation)    |
+| Queue                          | Recent searches tracking              |
+| Heap                           | Sorting results by frequency          |
+| Linear Probing Hashing         | Stop-word filtering                   |
 
-⚡ Live Autocomplete Suggestions
+---
 
-🕒 Browsing History (Stack)
+## ✨ Key Features
 
-🧠 Recent Searches (Queue)
+* **Single Word Search**
+* **Full Phrase Search** (e.g., “computer science”)
+* **Live Autocomplete Suggestions**
+* **Browsing History** (Stack)
+* **Recent Searches** (Queue)
+* **Stop-Word Removal**
+* **Input Cleaning** (special characters handled)
+* **Multi-File Search Support**
+* **Crash-Safe Input Handling**
 
-🚫 Stop‑Word Removal
+---
 
-🧹 Input Cleaning (special characters handled)
+## 🖥️ User Interface
 
-📂 Multi‑File Search Support
+* Clean, minimal UI
+* Search bar with **autocomplete**
+* Results panel
+* Browsing history & recent searches panel
+* **UI implemented using console + structured layout**
 
-🛡️ Crash‑safe Input Handling
+---
 
-🖥️ User Interface
-Clean and minimal UI
+## 📂 Project Structure
 
-Search bar with autocomplete
-
-Results panel
-
-Browsing history and recent searches panel
-
-(UI implemented using console + structured layout as shown in the project screenshot)
-
-📂 Project Structure
+```
 DSA-Search-Engine/
 │
 ├── backend/
-│   ├── utils.cpp              # Core logic & data structures (Trie, Hash, KMP, etc.)
-│   ├── main.cpp               # Program entry point
-│   ├── t1.txt                 # Sample document
-│   └── t2.txt                 # Sample document
+│   ├── utils.cpp      # Core logic & data structures (Trie, Hash, KMP, etc.)
+│   ├── main.cpp       # Program entry point
+│   ├── t1.txt         # Sample document
+│   └── t2.txt         # Sample document
 │
 ├── frontend/
-│   ├── index.html             # UI layout (search bar, results, panels)
-│   ├── styles.css             # UI styling (dark theme, layout)
-│   └── app.js                 # UI logic (search request handling)
+│   ├── index.html     # UI layout (search bar, results, panels)
+│   ├── styles.css     # UI styling (dark theme, layout)
+│   └── app.js         # UI logic (search request handling)
 │
-├── README.md                  # Project documentation
+└── README.md          # Project documentation
+```
 
-🚀 How It Works (Methodology)
-Documents are parsed
+---
 
-Words are extracted
+## 🚀 How It Works (Methodology)
 
-Stop words are removed
+1. **Document Parsing**: Extract words from input files
+2. **Stop Words Removal**: Remove common irrelevant words
+3. **Word Indexing**: Use Hash Tables for fast lookup
+4. **Trie Construction**: Store valid words for **autocomplete**
+5. **Search Execution**:
 
-Words are indexed using Hash Tables
+   * Single word → Hash Table lookup
+   * Phrase search → KMP algorithm
+6. **Results Handling**:
 
-Trie is built
+   * Sort by frequency using Heap
+   * Store history with Stack & Queue
 
-Stores all valid words for fast autocomplete
+---
 
-Search Execution
+## 🧪 Test Cases Covered
 
-Single word → Hash Table lookup
+* Empty input handling
+* Special character removal
+* Case-insensitive searches
+* No-match queries
+* Large dataset performance
+* Numeric & alphanumeric inputs
 
-Phrase search → KMP string matching
+---
 
-Results Handling
+## ⚠️ Challenges Faced
 
-Frequencies ranked using Heap
+* Handling duplicate sentence outputs
+* Preventing crashes on **TAB + ENTER**
+* Replacing STL vectors with arrays
+* Implementing stop words using hashing
+* Managing multi-word autocomplete
 
-History stored using Stack & Queue
+---
 
-🧪 Test Cases Covered
-Empty input handling
+## 🔮 Future Enhancements
 
-Special character removal
+* GUI using **Web / Qt**
+* File upload support
+* Ranking using **TF-IDF**
+* Advanced spell correction
+* Persistent storage (database)
+* Parallel searching for large datasets
 
-Case‑insensitive searches
+---
 
-No‑match queries
+## 👨‍💻 Team Members
 
-Large dataset performance
+* Abdul Rafay Ansari
+* Hamza
+* Shahzan Khan
 
-Numeric & alphanumeric inputs
+---
 
-⚠️ Challenges Faced
-Handling duplicate sentence outputs
+## 📚 Academic Note
 
-Preventing crashes on TAB + ENTER
+This project was developed strictly for **educational purposes** to demonstrate real-world applications of **Data Structures & Algorithms** without relying on STL shortcuts.
 
-Removing STL vectors and replacing with arrays
+---
 
-Implementing stop words using hashing
 
-Managing multi‑word autocomplete
-
-🔮 Future Enhancements
-GUI using Web / Qt
-
-File upload support
-
-Ranking using TF‑IDF
-
-Advanced spell correction
-
-Persistent storage (database)
-
-Parallel searching for large datasets
-
-👨‍💻 Team Members
-Abdul Rafay Ansari
-
-Hamza
-
-Shahzan Khan
-
-📚 Academic Note
-This project was developed strictly for educational purposes to demonstrate the real‑world application of Data Structures & Algorithms without relying on STL shortcuts.
