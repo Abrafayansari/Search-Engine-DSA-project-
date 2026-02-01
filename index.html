@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Search Engine</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🔍 DSA Search Engine</h1>
+            <p class="subtitle">Powered by Trie, Hash Table, KMP, Stack, Queue & Heap</p>
+        </header>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Type to search..." autocomplete="off">
+                <button id="searchBtn" class="btn btn-primary">Search</button>
+            </div>
+            
+            <!-- Autocomplete Suggestions -->
+            <div id="suggestions" class="suggestions-box"></div>
+            
+            <!-- Ghost Text Display -->
+            <div id="ghostText" class="ghost-text"></div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="main-grid">
+            <!-- Search Results -->
+            <div class="card results-card">
+                <div class="card-header">
+                    <h2>📄 Search Results</h2>
+                    <span id="resultCount" class="badge">0 results</span>
+                </div>
+                <div id="searchResults" class="card-content">
+                    <p class="placeholder">Enter a word to search...</p>
+                </div>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="side-panel">
+                <!-- Browsing History (Stack) -->
+                <div class="card history-card">
+                    <div class="card-header">
+                        <h2>📚 Browsing History</h2>
+                        <span class="dsa-tag">Stack (LIFO)</span>
+                    </div>
+                    <div id="browsingHistory" class="card-content">
+                        <p class="placeholder">No history yet</p>
+                    </div>
+                    <button id="goBackBtn" class="btn btn-secondary">← Go Back (Pop)</button>
+                </div>
+
+                <!-- Recent Searches (Queue) -->
+                <div class="card recent-card">
+                    <div class="card-header">
+                        <h2>🕐 Recent Searches</h2>
+                        <span class="dsa-tag">Queue (FIFO, Max 5)</span>
+                    </div>
+                    <div id="recentSearches" class="card-content">
+                        <p class="placeholder">No recent searches</p>
+                    </div>
+                    <button id="clearRecentBtn" class="btn btn-danger">Clear Recent</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Section -->
+        <div class="card documents-card">
+            <div class="card-header">
+                <h2>📁 All Documents</h2>
+                <button id="toggleDocsBtn" class="btn btn-outline">Show Documents</button>
+            </div>
+            <div id="documentsContent" class="card-content documents-content hidden">
+                <!-- Documents will be loaded here -->
+            </div>
+        </div>
+
+        <!-- DSA Info Panel -->
+        <div class="dsa-info-panel">
+            <h3>🧠 Data Structures Used</h3>
+            <div class="dsa-grid">
+                <div class="dsa-item">
+                    <span class="dsa-icon">🌳</span>
+                    <span class="dsa-name">Trie</span>
+                    <span class="dsa-desc">Autocomplete</span>
+                </div>
+                <div class="dsa-item">
+                    <span class="dsa-icon">#️⃣</span>
+                    <span class="dsa-name">Hash Table</span>
+                    <span class="dsa-desc">Word Indexing</span>
+                </div>
+                <div class="dsa-item">
+                    <span class="dsa-icon">🔤</span>
+                    <span class="dsa-name">KMP Algorithm</span>
+                    <span class="dsa-desc">Pattern Matching</span>
+                </div>
+                <div class="dsa-item">
+                    <span class="dsa-icon">📚</span>
+                    <span class="dsa-name">Stack</span>
+                    <span class="dsa-desc">History (LIFO)</span>
+                </div>
+                <div class="dsa-item">
+                    <span class="dsa-icon">🔄</span>
+                    <span class="dsa-name">Queue</span>
+                    <span class="dsa-desc">Recent (FIFO)</span>
+                </div>
+                <div class="dsa-item">
+                    <span class="dsa-icon">⛰️</span>
+                    <span class="dsa-name">Max Heap</span>
+                    <span class="dsa-desc">Sort by Frequency</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>DSA Project - Search Engine Implementation</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
